@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>OBS Camera Composite</title>
+		<link rel="shortcut icon" href="#" />
+		<!-- <link rel="stylesheet" type="text/css" href="joystick.css" /> -->
+		<style>
+			/* joystick css */
+			:root {
+				--joystick-width: 50vw;
+			}
+			.ball {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				display: block;
+				width: calc(var(--joystick-width) * 3 / 5);
+				height: calc(var(--joystick-width) * 3 / 5);
+				border-radius: 50%;
+				background: radial-gradient(
+					circle at 65% 35%,
+					#e5e5e5 3%,
+					#252525 60%,
+					#e5e6e5 100%
+				);
+			}
+			.handle {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				display: block;
+				width: calc(var(--joystick-width) * 0.4);
+				height: calc(var(--joystick-width) / 4);
+				border-radius: 5%;
+				background: linear-gradient(#252525 3%, #e5e5e5 60%, #252525 100%);
+			}
+			.stick {
+				background-color: black;
+				height: calc(var(--joystick-width) / 6);
+				width: calc(var(--joystick-width) / 3);
+				border-radius: calc(var(--joystick-width) / 12);
+				position: absolute;
+				transform-origin: calc(var(--joystick-width) / 12) 50%;
+				transform: translate(calc(var(--joystick-width) * 5 / 12), -50%)
+					rotate(0deg);
+				top: 50%;
+			}
+			.track {
+				background-color: black;
+				height: calc(var(--joystick-width) * 0.8);
+				width: calc(var(--joystick-width) / 40);
+				border-radius: calc(var(--joystick-width) / 12);
+				border: 1px solid #787878;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+			}
+			.chevron {
+				position: absolute;
+				width: calc(var(--joystick-width) / 8);
+				height: calc(var(--joystick-width) / 8);
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' preserveAspectRatio='xMidYMid meet'><path d='M1 8 L6 3 L11 8' stroke-width='3' stroke='black' fill='none' /></svg>");
+			}
+			.chevron.top {
+				transform: translateX(-50%);
+				left: 50%;
+				top: calc(var(--joystick-width) / 23);
+			}
+			.chevron.bottom {
+				transform: translateX(-50%) rotate(180deg);
+				left: 50%;
+				bottom: calc(var(--joystick-width) / 23);
+			}
+			.chevron.left {
+				transform: translateY(-50%) rotate(-90deg);
+				left: calc(var(--joystick-width) / 23);
+				top: 50%;
+			}
+			.chevron.right {
+				transform: translateY(-50%) rotate(90deg);
+				right: calc(var(--joystick-width) / 23);
+				top: 50%;
+			}
+			.plus, .minus {
+				position: absolute;
+				width: calc(var(--joystick-width) / 12);
+				height: calc(var(--joystick-width) / 12);
+				right: calc(var(--joystick-width) / 12);
+			}
+			.plus {
+				top: calc(var(--joystick-width) / 20);
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' preserveAspectRatio='xMidYMid meet'><path d='M0 2 L4 2 M2 0 L2 4' stroke='black' fill='none' /></svg>");
+			}
+			.minus {
+				bottom: calc(var(--joystick-width) / 20);
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' preserveAspectRatio='xMidYMid meet'><path d='M0 2 L4 2' stroke='black' fill='none' /></svg>");
+			}
+			.zoom-label {
+				position: absolute;
+				font-size: 1em;
+				transform: translateY(calc(var(--joystick-width) / 2 - 50%));
+			}
+			.base {
+				background-color: #b1b1b1;
+				width: var(--joystick-width);
+				height: var(--joystick-width);
+				position: absolute;
+				border-radius: 50%;
+				border: 1px solid #7a7a7a;
+			}
+			.updown.base {
+				border-radius: 0;
+				width: calc(var(--joystick-width) * 0.5);
+				transform: translateX(50%);
+			}
+			.joystick-container {
+				width: var(--joystick-width);
+				height: var(--joystick-width);
+				position: relative;
+				margin: 0.5rem;
+			}
+
+			/* normal css */
+			body,
+			html {
+				height: 100%;
+				margin: 0;
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 18px;
+				color: #fefefe;
+				overflow: hidden;
+				cursor: default;
+				user-select: none;
+			}
+			.obs-font {
+				font-size: 12px;
+			}
+			body {
+				background-color: #2b2e38;
+				display: flex;
+				flex-direction: column;
+			}
+			img {
+				image-rendering: pixelated;
+			}
+			#footer {
+				position: relative;
+				height: 37px;
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+				padding: 0px 5px;
+			}
+			#main {
+				flex-grow: 1;
+				position: relative;
+			}
+			.screen {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+			}
+			#scenes {
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+			}
+			#warning {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				font-size: 4rem;
+				color: white;
+				text-align: center;
+				background-color: #1c2b71;
+				z-index: 1000;
+				overflow: hidden;
+			}
+			#warning-msg {
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				position: absolute;
+				font-size: 5vh;
+			}
+			.header {
+				text-align: center;
+			}
+			.pop-up {
+				background-color: #3c404b;
+				box-shadow: 1px 1px 4px 0px #00000085;
+				position: absolute;
+				min-width: 182px;
+				padding: 3px;
+				top: 11px;
+				right: 14px;
+				z-index: 1;
+			}
+			.hide {
+				width: 0 !important;
+				height: 0 !important;
+				margin: 0 !important;
+				border: 0 !important;
+				padding: 0 !important;
+				transform: translate(-300vw, -300vh) !important;
+				opacity: 0;
+			}
+			.source {
+				height: 17px;
+				margin: 1px;
+				margin-left: 5px;
+				position: relative;
+				font-size: 12px;
+			}
+			.icon {
+				width: 16px;
+				margin-right: 5px;
+			}
+			.icon.footer {
+				margin: 0px;
+			}
+			div.icon.footer {
+				background-color: #3c404b;
+				width: 31px;
+				height: 27px;
+				border-radius: 4px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin: 0px 2px;
+			}
+			.source-text {
+				margin-left: -2px;
+				display: inline-block;
+				position: absolute;
+				top: 2px;
+			}
+			.setup-item {
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="main">
+			<div id="scene-select" class="screen hide">
+				<div class="header">Select a scene</div>
+				<div id="scenes"></div>
+			</div>
+			<div id="reference-select" class="screen hide">
+				<div class="header">Select a reference item</div>
+				<div id="reference-items"></div>
+			</div>
+			<div id="camera-select" class="screen hide">
+				<div class="header">Select a camera item</div>
+				<div id="camera-items"></div>
+			</div>
+			<div
+				id="camera-controls"
+				class="screen hide"
+				style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; grid-template-areas: 'a b' 'c c';"
+			>
+				<div class="joystick-container">
+					<div class="base">
+						<div id="up" class="chevron top"></div>
+						<div id="down" class="chevron bottom"></div>
+						<div id="left" class="chevron left"></div>
+						<div id="right" class="chevron right"></div>
+						<div id="stick" class="stick"></div>
+						<div id="ball" class="ball"></div>
+					</div>
+				</div>
+				<div class="joystick-container">
+					<div class="base updown">
+						<div id="+" class="plus"></div>
+						<div id="-" class="minus"></div>
+						<div id="track" class="track"></div>
+						<div id="handle" class="handle"></div>
+					</div>
+				</div>
+				<div style="grid-area: c;">
+					
+				</div>
+			</div>
+			<div id="warning">
+				<div id="warning-msg">Loading...</div>
+			</div>
+		</div>
+		<div id="footer"></div>
+	</body>
+	<script src=bundle.js></script>
+</html>

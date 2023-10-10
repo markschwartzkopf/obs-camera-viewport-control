@@ -197,14 +197,16 @@ function prepTransform(
 	rtn.scaleX = reference.width / newWidth;
 	if (rtn.scaleX > 50) rtn.scaleX = 50;
 	rtn.scaleY = rtn.scaleX;
+	if (transform.scaleX < 0) rtn.scaleX *= -1;
+	if (transform.scaleY < 0) rtn.scaleY *= -1;
 	return rtn;
 }
 
 function pan(dir: { x: number; y: number; zoom: number }) {
 	if (inMove) {
-		console.log('skip');
 		return;
 	}
+
 	inMove = true;
 	if (
 		connectedToOBS &&
@@ -242,6 +244,8 @@ function pan(dir: { x: number; y: number; zoom: number }) {
 						transform;
 				}
 				const cam = selectedSceneItemsArr[cameraIndexNum].sceneItemTransform;
+				if (cam.scaleX < 0) dir.x *= -1;
+				if (cam.scaleY < 0) dir.y *= -1;
 				const ref = selectedSceneItemsArr[referenceIndexNum].sceneItemTransform;
 				const smallestInc = 1 / (cam.scaleX * 2);
 
@@ -249,46 +253,40 @@ function pan(dir: { x: number; y: number; zoom: number }) {
 				let cropRightDelta = dir.x * smallestInc * -1;
 				let cropTopDelta = dir.y * smallestInc;
 				let cropBottomDelta = dir.y * smallestInc * -1;
-				let zoomDelta = dir.zoom * (smallestInc / 2)
+				let zoomDelta = dir.zoom * (smallestInc / 2);
 
 				if (
-					Math.abs(Math.min(
-						cropLeftDelta,
-						cropRightDelta,
-						cropTopDelta,
-						cropBottomDelta
-					)) < 1
+					Math.abs(
+						Math.min(
+							cropLeftDelta,
+							cropRightDelta,
+							cropTopDelta,
+							cropBottomDelta
+						)
+					) < 1
 				) {
-					if (dir.x !== 0 || dir.y !==0) {
+					if (dir.x !== 0 || dir.y !== 0) {
 						if (Math.abs(dir.x) > Math.abs(dir.y)) {
 							cropLeftDelta = cropLeftDelta > 0 ? 1 : -1;
 							cropRightDelta = cropRightDelta > 0 ? 1 : -1;
-							console.log('lr')
 						} else {
 							cropTopDelta = cropTopDelta > 0 ? 1 : -1;
 							cropBottomDelta = cropBottomDelta > 0 ? 1 : -1;
-							console.log('tb')
 						}
 					}
 				}
-				if (Math.abs(zoomDelta) < 1) zoomDelta = zoomDelta > 0 ? 1 : -1
-
-				console.log(`${cropLeftDelta} ${cropRightDelta} ${cropTopDelta} ${cropBottomDelta}`)
+				if (Math.abs(zoomDelta) < 1) zoomDelta = zoomDelta > 0 ? 1 : -1;
 
 				const newTransform: SubTransform = {
-					cropLeft:
-						cam.cropLeft + cropLeftDelta + zoomDelta,
-					cropRight:
-						cam.cropRight + cropRightDelta + zoomDelta,
-					cropTop:
-						cam.cropTop + cropTopDelta + zoomDelta,
-					cropBottom:
-						cam.cropBottom + cropBottomDelta + zoomDelta,
+					cropLeft: cam.cropLeft + cropLeftDelta + zoomDelta,
+					cropRight: cam.cropRight + cropRightDelta + zoomDelta,
+					cropTop: cam.cropTop + cropTopDelta + zoomDelta,
+					cropBottom: cam.cropBottom + cropBottomDelta + zoomDelta,
 					sourceWidth: cam.sourceWidth,
 					sourceHeight: cam.sourceHeight,
+					scaleX: cam.scaleX,
+					scaleY: cam.scaleY,
 				};
-				console.log(newTransform);
-				console.log(prepTransform(newTransform, ref));
 				return obs.call('SetSceneItemTransform', {
 					sceneName: selectedSceneStr,
 					sceneItemId: selectedSceneItemsArr[cameraIndexNum].sceneItemId,

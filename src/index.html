@@ -85,7 +85,8 @@
 				right: calc(var(--joystick-width) / 23);
 				top: 50%;
 			}
-			.plus, .minus {
+			.plus,
+			.minus {
 				position: absolute;
 				width: calc(var(--joystick-width) / 12);
 				height: calc(var(--joystick-width) / 12);
@@ -245,6 +246,10 @@
 			.setup-item {
 				white-space: nowrap;
 			}
+			#camera-select, #scene-select, #reference-select {
+				overflow: auto;
+				height: 100%;
+			}
 		</style>
 	</head>
 	<body>
@@ -264,7 +269,12 @@
 			<div
 				id="camera-controls"
 				class="screen hide"
-				style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; grid-template-areas: 'a b' 'c c';"
+				style="
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					grid-template-rows: 1fr 1fr;
+					grid-template-areas: 'a b' 'c c';
+				"
 			>
 				<div class="joystick-container">
 					<div class="base">
@@ -284,9 +294,7 @@
 						<div id="handle" class="handle"></div>
 					</div>
 				</div>
-				<div style="grid-area: c;">
-					
-				</div>
+				<div style="grid-area: c"></div>
 			</div>
 			<div id="warning">
 				<div id="warning-msg">Loading...</div>

@@ -95,6 +95,8 @@ type SubTransform = {
 	cropLeft: number;
 	sourceWidth: number;
 	sourceHeight: number;
+	scaleX: number;
+	scaleY: number;
 };
 
 type SendTransform = {
